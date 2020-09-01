@@ -3,37 +3,44 @@
 module.exports = app => {
   const { STRING, DATE, INTEGER, BOOLEAN } = app.Sequelize;
 
-  const Issue = app.model.define('issue', {
+  const Issue = app.model.define('monitor_issues', {
     id: {
       type: INTEGER,
       primaryKey: true,
       autoIncrement: true,
     },
-    
-  })
-}
-// data = Table_monitor_child_cses(
-//   cse_id=self.format_cse_data(raw.get('id'), param=None),
-//   cse_type=1,
-//   cse_key=self.format_cse_data(raw.get('key'), param=None),
-//   cse_parent_id=self.format_cse_data(raw.get('fields').get('customfield_10007'), param=None),
-//   cse_summary=self.format_cse_data(raw.get('fields').get('summary'), param=None),
-//   project_name=self.format_cse_data(raw.get('fields').get('customfield_11190'), param=None),
-//   project_manager=self.format_cse_data(raw.get('fields').get('customfield_11275'), param='displayName'),
-//   customer_name=self.format_cse_data(self.format_data(raw.get('fields').get('customfield_11191')), param=None),
-//   customer_level=self.format_cse_data(self.format_data(raw.get('fields').get('customfield_11271')), param='value'),
-//   inspection_frequency=self.format_cse_data(self.format_data(raw.get('fields').get('customfield_11258')), param='value'),
-//   service_start_time=self.format_cse_data(raw.get('fields').get('customfield_11288'), param=None),
-//   service_end_time=self.format_cse_data(raw.get('fields').get('customfield_11273'), param=None),
-//   service_type=self.format_cse_data(self.format_data(raw.get('fields').get('customfield_11289')), param='value'),
-//   service_area=self.format_cse_data(self.format_data(raw.get('fields').get('customfield_11303')), param='value'),
-//   deploy_status=self.format_cse_data(raw.get('fields').get('customfield_11219'), param='value'),
-//   env_type=self.format_cse_data(raw.get('fields').get('customfield_11220'), param='value'),
-//   current_version=self.format_cse_data(raw.get('fields').get('customfield_11196'), param='name'),
-//   implement_name=self.format_cse_data(raw.get('fields').get('customfield_11315'), param=None),
-//   child_cse_extra_1=None,
-//   child_cse_extra_2=None,
-//   child_cse_extra_3=None,
-//   created_at=datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
-//   updated_at=datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")
-// )
+    issue_id: STRING(128),
+    issue_cse_id: STRING(128),
+    issue_key: STRING(128),
+    issue_name: STRING(256),
+    issue_summary: STRING(1028),
+    issue_status: STRING(128),
+    issue_type: STRING(64),
+    issue_type_description: STRING(1028),
+    issue_created: DATE,
+    issue_fix_versions: STRING(128),
+    issue_fix_versions_description: STRING(1028),
+    issue_creator_name: STRING(128),
+    issue_creator_id: STRING(128),
+    issue_assignee_name: STRING(128),
+    issue_assignee_id: STRING(128),
+    issue_reporter_name: STRING(128),
+    issue_reporter_id: STRING(128),
+    issue_updated: DATE,
+    issue_priority: STRING(64),
+    issue_sla_time_to_resolution: STRING(128),
+    issue_sla_time_to_l1_review: STRING(128),
+    issue_sla_time_to_first_response: STRING(128),
+    issue_sla_time_to_close_after_resolution: STRING(128),
+    issue_components: STRING(128),
+    issue_area: STRING(128),
+    issue_result: STRING(128),
+    issue_extra_1: STRING(128),
+    issue_extra_2: STRING(128),
+    issue_extra_3: STRING(128),
+    created_at: DATE,
+    updated_at: DATE,
+  });
+
+  return Issue;
+};
