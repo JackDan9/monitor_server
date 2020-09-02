@@ -13,21 +13,43 @@ class IssueController extends Controller {
 
     const issue_total = await ctx.service.issue.list(query);
     
-    // const issue_total_number = await ctx.model.Issue.findAndCountAll();
+    const customerQuery = {
+      limit: ctx.helper.parseInt(ctx.query.limit),
+      offset: ctx.helper.parseInt(ctx.query.offset),
+    };
 
-    // const cse_list = await ctx.model.Issue.findAll({
-    //   attributes: ['issue_cse_id']
-    // });
+    const customer_total = await ctx.service.cseParent.totalCustomer(customerQuery);
 
+    const totalNode_1 = await ctx.service.cseParent.totalNode_1();
+    const totalNode_2 = await ctx.service.cseParent.totalNode_2();
+    const totalNode_3 = await ctx.service.cseParent.totalNode_3();
+    const totalNode_4 = await ctx.service.cseParent.totalNode_4();
+    const totalNode_5 = await ctx.service.cseParent.totalNode_5();
+    const totalNode_6 = await ctx.service.cseParent.totalNode_6();
+    const totalNode_7 = await ctx.service.cseParent.totalNode_7();
+    const totalNode = totalNode_1 + totalNode_2 + totalNode_3 + totalNode_4 + totalNode_5 + totalNode_6 + totalNode_7;
+
+    const fixVersionQuery = {
+      limit: ctx.helper.parseInt(ctx.query.limit),
+      offset: ctx.helper.parseInt(ctx.query.offset),
+    };
+
+    const fix_version_data = await ctx.service.issue.fixVersionList(fixVersionQuery);
+
+    const slaQuery = {
+      limit: ctx.helper.parseInt(ctx.query.limit),
+      offset: ctx.helper.parseInt(ctx.query.offset),
+    };
+
+    const sla_data = await ctx.service.issue.slaList(slaQuery);
     
-    // for(let cse_key in cse_list) {
-      
-    // }
-
     ctx.body = {
       code: 200,
       data: {
         issue_total_number: issue_total['count'],
+        customer_total_number: customer_total.length,
+        node_total_number: totalNode,
+        sla_data: sla_data,
       }
     };
   }
