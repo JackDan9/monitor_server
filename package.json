@@ -7,24 +7,25 @@
     "declarations": true
   },
   "dependencies": {
+    "dataloader": "^2.0.0",
     "egg": "^2.15.1",
+    "egg-graphql": "^2.8.0",
     "egg-scripts": "^2.11.0",
-    "egg-sequelize": "^5.2.2"
+    "egg-sequelize": "^5.2.2",
+    "egg-socket.io": "^4.1.6",
+    "lodash": "^4.17.20",
+    "mysql2": "^2.1.0",
+    "egg-view-nunjucks": "^2.2.0",
+    "egg-redis": "^2.4.0"
   },
   "devDependencies": {
     "autod": "^3.0.1",
     "autod-egg": "^1.1.0",
     "egg-bin": "^4.11.0",
     "egg-ci": "^1.11.0",
-    "egg-graphql": "^2.8.0",
     "egg-mock": "^3.21.0",
-    "egg-redis": "^2.4.0",
-    "egg-socket.io": "^4.1.6",
-    "egg-view-nunjucks": "^2.2.0",
     "eslint": "^5.13.0",
     "eslint-config-egg": "^7.1.0",
-    "lodash": "^4.17.20",
-    "mysql2": "^2.1.0",
     "sequelize-cli": "^6.2.0"
   },
   "engines": {

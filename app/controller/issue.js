@@ -42,14 +42,70 @@ class IssueController extends Controller {
     };
 
     const sla_data = await ctx.service.issue.slaList(slaQuery);
-    
+
+    const result_sla_data = [];
+
+    sla_data.map((item, index) => {
+      result_sla_data.push({
+        sla_1: JSON.parse(item['issue_sla_time_to_first_response']),
+        sla_2: JSON.parse(item['issue_sla_time_to_l1_review']),
+        sla_3: JSON.parse(item['issue_sla_time_to_resolution']),
+        sla_4: JSON.parse(item['issue_sla_time_to_close_after_resolution']),
+        issue_area: item['issue_area'],
+        service_area: item['service_area'],
+      });
+    });
+
+    const customerListQuery = {
+      limit: ctx.helper.parseInt(ctx.query.limit),
+      offset: ctx.helper.parseInt(ctx.query.offset),
+    };
+
+    const cseList = await ctx.service.cseChild.customerIssues(customerListQuery);
+    let tempArr = [], newArr = []
+    for (let i = 0; i < cseList.length; i++) {
+      if (tempArr.indexOf(arr[i].id) === -1) {
+        newArr.push({
+          id: arr[i].id,
+          list: [arr[i].list]
+        })
+        tempArr.push(arr[i].id);
+      } else {
+        for (let j = 0; j < newArr.length; j++) {
+          if (newArr[j].id == arr[i].id) {
+            newArr[j].list.push(arr[i].list)
+          }
+        }
+      }
+    }
+    // const totalIssueQuery = {
+    //   limit: ctx.helper.parseInt(ctx.query.limit),
+    //   offset: ctx.helper.parseInt(ctx.query.offset),
+    // };
+
+    // const issueList = await ctx.service.issue.totalIssue(totalIssueQuery);
+
+    // const result_top_issue = [];
+
+    // cseList.map((cseItem, cseIndex) => {
+    //   issueList.map((issueItem, issueIndex) => {
+    //     if(cseItem['cse_key'] === issueItem['issue_cse_id'] || cseItem['cse_parent_id'] === issueItem['issue_cse_id']) {
+    //       cseItem['issue_list'].push(issueItem);
+    //     }
+    //   })
+    // })
+
     ctx.body = {
       code: 200,
       data: {
         issue_total_number: issue_total['count'],
         customer_total_number: customer_total.length,
         node_total_number: totalNode,
-        sla_data: sla_data,
+        cseList: cseList,
+        // customerList: customerList,
+        // issueList: issueList,
+        // ecs_version_data: fix_version_data,
+        // sla_data: result_sla_data,
       }
     };
   }
