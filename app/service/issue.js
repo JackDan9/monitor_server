@@ -58,12 +58,9 @@ class IssueService extends Service {
     ctx.model.Issue.hasMany(ctx.model.CseChild, {as: 'issue_service_area', constraints: false, foreignKey: 'cse_parent_id', sourceKey: 'issue_cse_id'});
 
     const options = {
-      attributes: ['id', 'issue_sla_time_to_first_response', 'issue_sla_time_to_l1_review', 'issue_sla_time_to_resolution', 'issue_sla_time_to_close_after_resolution', 'issue_area'],
+      attributes: ['id', 'issue_sla_time_to_resolution', 'issue_area'],
       order: [['id']],
       plain: false,
-      where: {
-        issue_status: '完成',
-      },
       include: [
         {
           model: ctx.model.CseChild,
@@ -73,8 +70,37 @@ class IssueService extends Service {
       ],
     };
 
+    options.where = {
+      issue_status: {[Op.eq]: '完成'},
+      issue_type: {
+        [Op.ne]: 'Change', 
+        [Op.not]: 'Service Request',
+      },
+    };
+
     return ctx.model.Issue.findAll(options);
   };
+
+  async totalSlaList({ offset = 0, limit = 10 }) {
+    const ctx = this.ctx;
+
+    const Op = this.app.Sequelize.Op;
+
+    const options = {
+      attributes: ['id', 'issue_sla_time_to_first_response', 'issue_sla_time_to_l1_review', 'issue_sla_time_to_resolution', 'issue_status'],
+      order: [['id']],
+      plain: false,
+    };
+
+    options.where = {
+      issue_type: {
+        [Op.ne]: 'Change', 
+        [Op.not]: 'Service Request'
+      },
+    };
+
+    return ctx.model.Issue.findAll(options);
+  }
 }
 
 module.exports = IssueService;

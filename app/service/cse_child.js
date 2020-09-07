@@ -27,7 +27,6 @@ class CseChildService extends Service {
         attributes: ['id', 'issue_key', 'issue_name', 'issue_type'],
         where: {
           issue_cse_id: {[Op.not]: null},
-          issue_type: {[Op.ne]: 'Change'},
         },
       },
     ];
