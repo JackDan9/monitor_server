@@ -1,16 +1,7 @@
 {
   "development": {
     "username": "root",
-    "password": "passw0rd",
-    "database": "redmine20200814",
-    "host": "172.16.7.84",
-    "dialect": "mysql"
-  },
-  "test": {
-
-  },
-  "production": {
-    "username": "root",
+    "baseDir": "model", 
     "password": "passw0rd",
     "database": "redmine20200814",
     "host": "172.16.7.84",

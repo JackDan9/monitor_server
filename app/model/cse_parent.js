@@ -31,6 +31,8 @@ module.exports = app => {
     license_expire: DATE,
     cpu: STRING(16),
     components: STRING(64),
+    cse_created: DATE,
+    cse_updated: DATE,
     parent_cse_extra_1: STRING(128),
     parent_cse_extra_2: STRING(128),
     parent_cse_extra_3: STRING(128),

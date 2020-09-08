@@ -8,28 +8,29 @@ class CseChildService extends Service {
 
     const Op = this.app.Sequelize.Op;
 
-    ctx.model.CseChild.hasMany(ctx.model.Issue, {as: 'issue', constraints: false, foreignKey: 'issue_cse_id', sourceKey: 'cse_parent_id'});
-    
+    if(!ctx.model.CseChild.hasAlias('issue')) {
+      ctx.model.CseChild.hasMany(ctx.model.Issue, {as: 'issue', foreignKey: 'issue_cse_id', sourceKey: 'cse_parent_id'});
+    }
+
     const options = {
-      attributes: [ 'id', 'cse_key', 'cse_parent_id', 'customer_name'],
+      attributes: ['id', 'cse_key', 'cse_parent_id', 'customer_name'],
       order: [['id']],
       plain: false,
+      include: [
+        {
+          model: ctx.model.Issue,
+          as: 'issue',
+          attributes: ['id', 'issue_key', 'issue_name', 'issue_type'],
+          where: {
+            issue_cse_id: {[Op.not]: null},
+          },
+        },
+      ],
     };
 
     options.where = {
       customer_name: {[Op.not]: null, [Op.ne]: 'None'},
     };
-
-    options.include = [
-      {
-        model: ctx.model.Issue,
-        as: 'issue',
-        attributes: ['id', 'issue_key', 'issue_name', 'issue_type'],
-        where: {
-          issue_cse_id: {[Op.not]: null},
-        },
-      },
-    ];
 
     return ctx.model.CseChild.findAll(options);
   };

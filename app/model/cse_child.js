@@ -27,6 +27,8 @@ module.exports = app => {
     env_type: STRING(64),
     current_version: STRING(16),
     implement_name: STRING(64),
+    cse_created: DATE,
+    cse_updated: DATE,
     child_cse_extra_1: STRING(128),
     child_cse_extra_2: STRING(128),
     child_cse_extra_3: STRING(128),

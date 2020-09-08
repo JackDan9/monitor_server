@@ -56,16 +56,52 @@ class IssueController extends Controller {
       offset: ctx.helper.parseInt(ctx.query.offset),
     };
 
-    const sla_time_to_resolution_data = await ctx.service.issue.slaList(slaQuery);
+    const sla_data = await ctx.service.issue.slaList(slaQuery);
 
-    const result_sla_time_to_resolution_data = [];
+    const result_sla_data = [];
 
-    sla_time_to_resolution_data.map((item, index) => {
-      result_sla_time_to_resolution_data.push({
+    sla_data.map((item, index) => {
+      if(item['issue_sla_time_to_first_response'] !== null) {
+        item['issue_sla_time_to_first_response'] = {
+          goalDuration: JSON.parse(item['issue_sla_time_to_first_response'])['goalDuration'],
+          elapsedTime: JSON.parse(item['issue_sla_time_to_first_response'])['elapsedTime'],
+          startTime: JSON.parse(item['issue_sla_time_to_first_response'])['startTime'],
+          stopTime: JSON.parse(item['issue_sla_time_to_first_response'])['stopTime'],
+        }
+      }
+
+      if(item['issue_sla_time_to_l1_review'] !== null) {
+        item['issue_sla_time_to_l1_review'] = {
+          goalDuration: JSON.parse(item['issue_sla_time_to_l1_review'])['goalDuration'],
+          elapsedTime: JSON.parse(item['issue_sla_time_to_l1_review'])['elapsedTime'],
+          startTime: JSON.parse(item['issue_sla_time_to_l1_review'])['startTime'],
+          stopTime: JSON.parse(item['issue_sla_time_to_l1_review'])['stopTime'],
+        }
+      }
+
+      if(item['issue_sla_time_to_resolution'] !== null) {
+        item['issue_sla_time_to_resolution'] = {
+          goalDuration: JSON.parse(item['issue_sla_time_to_resolution'])['goalDuration'],
+          elapsedTime: JSON.parse(item['issue_sla_time_to_resolution'])['elapsedTime'],
+          startTime: JSON.parse(item['issue_sla_time_to_resolution'])['startTime'],
+          stopTime: JSON.parse(item['issue_sla_time_to_resolution'])['stopTime'],
+        }
+      } 
+      
+      result_sla_data.push({
         id: item['id'],
-        sla_resolution: JSON.parse(item['issue_sla_time_to_resolution']),
+        issue_id: item['issue_key'],
+        issue_name: item['issue_name'],
+        issue_summary: item['issue_summary'],
+        issue_type: item['issue_type'],
+        issue_status: item['issue_status'],
+        issue_created: item['issue_created'],
+        issue_updated: item['issue_updated'],
+        sla_1: item['issue_sla_time_to_first_response'],
+        sla_2: item['issue_sla_time_to_l1_review'],
+        sla_3: item['issue_sla_time_to_resolution'],
         issue_area: item['issue_area'],
-        service_area: item['issue_service_area'],
+        service_area: item['CseChild'],
       });
     });
 
@@ -98,28 +134,6 @@ class IssueController extends Controller {
       }
     }
 
-    /**
-     * issue total sla data
-     */
-    const totalSlaListQuery = {
-      limit: ctx.helper.parseInt(ctx.query.limit),
-      offset: ctx.helper.parseInt(ctx.query.offset),
-    };
-
-    const total_sla_data = await ctx.service.issue.totalSlaList(totalSlaListQuery);
-
-    const result_total_sla_data = [];
-
-    total_sla_data.map((item, index) => {
-      result_total_sla_data.push({
-        sla_1: JSON.parse(item['issue_sla_time_to_first_response']),
-        sla_2: JSON.parse(item['issue_sla_time_to_l1_review']),
-        sla_3: JSON.parse(item['issue_sla_time_to_resolution']),
-        issue_status: item['issue_status'],
-      });
-    });
-    
-
     ctx.body = {
       code: 200,
       data: {
@@ -127,9 +141,8 @@ class IssueController extends Controller {
         customer_total_number: customer_total.length,
         node_total_number: totalNode,
         ecs_version_data: fix_version_data,
-        sla_data: result_sla_time_to_resolution_data,
+        sla_data: result_sla_data,
         customer_rate_data: newResult,
-        total_sla_data: result_total_sla_data,
       }
     };
   }
