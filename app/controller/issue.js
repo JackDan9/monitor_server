@@ -16,6 +16,70 @@ class IssueController extends Controller {
 
     const issue_total = await ctx.service.issue.list(query);
     
+    let issue_data = issue_total['rows'];
+
+    let compare = (key) => {
+      return (value1, value2) => {
+        var val1 = value1[key];
+        var val2 = value2[key];
+        return val2 - val1;
+      }
+    };
+
+    let _issue_assignee_data = issue_data.reduce((obj, item) => {
+      let _find = obj.find(i => i.issue_assignee_name == item.issue_assignee_name);
+      let _d = {issue_assignee_name: item.issue_assignee_name, frequency: 1};
+      _find ? _find.frequency++ : obj.push(_d);
+      return obj;
+    }, []);
+
+    const result_issue_assignee_data = _issue_assignee_data.sort(compare('frequency')).splice(0, 19);
+
+    let _issue_type_data = issue_data.reduce((obj, item) => {
+      let _find = obj.find(i => i.issue_type == item.issue_type);
+      let _d = {issue_type: item.issue_type, frequency: 1};
+      _find ? _find.frequency++ : obj.push(_d);
+      return obj;
+    }, []);
+
+    const result_issue_type_data = _issue_type_data.sort(compare['frequency']).splice(0, 4);
+
+    let _issue_version_data = issue_data.reduce((obj, item) => {
+      let _find = obj.find(i => i.issue_fix_versions == item.issue_fix_versions);
+      let _d = { issue_fix_versions: item.issue_fix_versions, frequency: 1 };
+      _find ? _find.frequency++ : obj.push(_d);
+      return obj;
+    }, []);
+
+    const result_issue_version_data = _issue_version_data.sort(compare['frequency']).splice(0, 19);
+
+    let _issue_priority_data = issue_data.reduce((obj, item) => {
+      let _find = obj.find(i => i.issue_priority == item.issue_priority);
+      let _d = { issue_priority: item.issue_priority, frequency: 1 };
+      _find ? _find.frequency++ : obj.push(_d);
+      return obj;
+    }, []);
+
+    const result_issue_priority_data = _issue_priority_data.sort(compare['frequency']).splice(0,3);
+
+    const issue_cpu_data = [];
+    issue_data.map((item, index) => {
+      if(item['CseParent'] && item['CseParent'].length !== 0) {
+        issue_cpu_data.push({cpu: item['CseParent'][0]['cpu']});
+      } else {
+        issue_cpu_data.push({cpu: null});
+      }
+    })
+
+    let _issue_cpu_data = issue_cpu_data.reduce((obj, item) => {
+      let _find = obj.find(i => i.cpu == item.cpu);
+      let _d = { cpu: item.cpu, frequency: 1 };
+      _find ? _find.frequency++ : obj.push(_d);
+      return obj;
+    }, []);
+
+    const result_issue_cpu_data = _issue_cpu_data.sort(compare['frequency']).splice(0,4);
+
     /**
      * customer total number
      */
@@ -97,6 +161,7 @@ class IssueController extends Controller {
         issue_status: item['issue_status'],
         issue_created: item['issue_created'],
         issue_updated: item['issue_updated'],
+        issue_priority: item['issue_priority'],
         sla_1: item['issue_sla_time_to_first_response'],
         sla_2: item['issue_sla_time_to_l1_review'],
         sla_3: item['issue_sla_time_to_resolution'],
@@ -134,6 +199,8 @@ class IssueController extends Controller {
       }
     }
 
+    const result_customer_rate_data = newResult.sort(compare('issue_number')).splice(0, 19);
+
     ctx.body = {
       code: 200,
       data: {
@@ -142,7 +209,14 @@ class IssueController extends Controller {
         node_total_number: totalNode,
         ecs_version_data: fix_version_data,
         sla_data: result_sla_data,
-        customer_rate_data: newResult,
+        customer_rate_data: result_customer_rate_data,
+        issue_data: {
+          assignee: result_issue_assignee_data, 
+          type: result_issue_type_data,
+          version: result_issue_version_data,
+          priority: result_issue_priority_data,
+          issue_cpu_data: result_issue_cpu_data,
+        },
       }
     };
   }
