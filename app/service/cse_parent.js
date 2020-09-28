@@ -23,6 +23,20 @@ class CseParentService extends Service {
     return ctx.model.CseParent.findAll(options);
   };
 
+  async totalCpu() {
+    const ctx = this.ctx;
+
+    const Op = this.app.Sequelize.Op;
+
+    const options = {
+      attributes: ['cpu'],
+      order: [['id']],
+      plain: false,
+    }
+
+    return ctx.model.CseParent.findAll(options);
+  }
+
   async totalNode_1() {
     const ctx = this.ctx;
 

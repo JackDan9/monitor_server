@@ -14,9 +14,23 @@ class IssueController extends Controller {
       offset: ctx.helper.parseInt(ctx.query.offset),
     };
 
-    const issue_total = await ctx.service.issue.list(query);
-    
+    const issue_total = await ctx.service.issue.issueTotalList(query);
+
     let issue_data = issue_total['rows'];
+
+
+    /**
+     * issue month number
+     * 
+     */
+    const issueMonthQuery = {
+      limit: ctx.helper.parseInt(ctx.query.limit),
+      offset: ctx.helper.parseInt(ctx.query.offset),
+    };
+
+    const issue_month_data = await ctx.service.issue.issueMonthList(issueMonthQuery);
+
+    let issue_month_total = issue_month_data['rows'];
 
     let compare = (key) => {
       return (value1, value2) => {
@@ -26,25 +40,25 @@ class IssueController extends Controller {
       }
     };
 
-    let _issue_assignee_data = issue_data.reduce((obj, item) => {
+    let _issue_assignee_data = issue_month_total.reduce((obj, item) => {
       let _find = obj.find(i => i.issue_assignee_name == item.issue_assignee_name);
-      let _d = {issue_assignee_name: item.issue_assignee_name, frequency: 1};
+      let _d = { issue_assignee_name: item.issue_assignee_name, frequency: 1 };
       _find ? _find.frequency++ : obj.push(_d);
       return obj;
     }, []);
 
     const result_issue_assignee_data = _issue_assignee_data.sort(compare('frequency')).splice(0, 19);
 
-    let _issue_type_data = issue_data.reduce((obj, item) => {
+    let _issue_type_data = issue_month_total.reduce((obj, item) => {
       let _find = obj.find(i => i.issue_type == item.issue_type);
-      let _d = {issue_type: item.issue_type, frequency: 1};
+      let _d = { issue_type: item.issue_type, frequency: 1 };
       _find ? _find.frequency++ : obj.push(_d);
       return obj;
     }, []);
 
     const result_issue_type_data = _issue_type_data.sort(compare['frequency']).splice(0, 4);
 
-    let _issue_version_data = issue_data.reduce((obj, item) => {
+    let _issue_version_data = issue_month_total.reduce((obj, item) => {
       let _find = obj.find(i => i.issue_fix_versions == item.issue_fix_versions);
       let _d = { issue_fix_versions: item.issue_fix_versions, frequency: 1 };
       _find ? _find.frequency++ : obj.push(_d);
@@ -53,23 +67,16 @@ class IssueController extends Controller {
 
     const result_issue_version_data = _issue_version_data.sort(compare['frequency']).splice(0, 19);
 
-    let _issue_priority_data = issue_data.reduce((obj, item) => {
+    let _issue_priority_data = issue_month_total.reduce((obj, item) => {
       let _find = obj.find(i => i.issue_priority == item.issue_priority);
       let _d = { issue_priority: item.issue_priority, frequency: 1 };
       _find ? _find.frequency++ : obj.push(_d);
       return obj;
     }, []);
 
-    const result_issue_priority_data = _issue_priority_data.sort(compare['frequency']).splice(0,3);
+    const result_issue_priority_data = _issue_priority_data.sort(compare['frequency']).splice(0, 3);
 
-    const issue_cpu_data = [];
-    issue_data.map((item, index) => {
-      if(item['CseParent'] && item['CseParent'].length !== 0) {
-        issue_cpu_data.push({cpu: item['CseParent'][0]['cpu']});
-      } else {
-        issue_cpu_data.push({cpu: null});
-      }
-    })
+    const issue_cpu_data = await ctx.service.cseParent.totalCpu();
 
     let _issue_cpu_data = issue_cpu_data.reduce((obj, item) => {
       let _find = obj.find(i => i.cpu == item.cpu);
@@ -78,7 +85,7 @@ class IssueController extends Controller {
       return obj;
     }, []);
 
-    const result_issue_cpu_data = _issue_cpu_data.sort(compare['frequency']).splice(0,4);
+    const result_issue_cpu_data = _issue_cpu_data.sort(compare['frequency']).splice(0, 4);
 
     /**
      * customer total number
@@ -105,12 +112,19 @@ class IssueController extends Controller {
     /**
      * ecs product version total number
      */
-    const fixVersionQuery = {
+    const ecsVersionList = {
       limit: ctx.helper.parseInt(ctx.query.limit),
       offset: ctx.helper.parseInt(ctx.query.offset),
     };
 
-    const fix_version_data = await ctx.service.issue.fixVersionList(fixVersionQuery);
+    const ecs_version_data = await ctx.service.issue.ecsVersionList(ecsVersionList);
+
+    let _ecs_version_data = ecs_version_data.reduce((obj, item) => {
+      let _find = obj.find(i => i.current_version == item.current_version);
+      let _d = { current_version: item.current_version, frequency: 1 };
+      _find ? _find.frequency++ : obj.push(_d);
+      return obj;
+    }, []);
 
     /**
      * L2 issue sla time to resolution data
@@ -125,38 +139,31 @@ class IssueController extends Controller {
     const result_sla_data = [];
 
     sla_data.map((item, index) => {
-      if(item['issue_sla_time_to_first_response'] !== null) {
+      if (item['issue_sla_time_to_first_response'] !== null) {
         item['issue_sla_time_to_first_response'] = {
-          goalDuration: JSON.parse(item['issue_sla_time_to_first_response'])['goalDuration'],
-          elapsedTime: JSON.parse(item['issue_sla_time_to_first_response'])['elapsedTime'],
-          startTime: JSON.parse(item['issue_sla_time_to_first_response'])['startTime'],
-          stopTime: JSON.parse(item['issue_sla_time_to_first_response'])['stopTime'],
+          goalDuration: JSON.parse(item['issue_sla_time_to_first_response'])['goalDuration']['millis'],
+          elapsedTime: JSON.parse(item['issue_sla_time_to_first_response'])['elapsedTime']['millis'],
         }
       }
 
-      if(item['issue_sla_time_to_l1_review'] !== null) {
+      if (item['issue_sla_time_to_l1_review'] !== null) {
         item['issue_sla_time_to_l1_review'] = {
-          goalDuration: JSON.parse(item['issue_sla_time_to_l1_review'])['goalDuration'],
-          elapsedTime: JSON.parse(item['issue_sla_time_to_l1_review'])['elapsedTime'],
-          startTime: JSON.parse(item['issue_sla_time_to_l1_review'])['startTime'],
-          stopTime: JSON.parse(item['issue_sla_time_to_l1_review'])['stopTime'],
+          goalDuration: JSON.parse(item['issue_sla_time_to_l1_review'])['goalDuration']['millis'],
+          elapsedTime: JSON.parse(item['issue_sla_time_to_l1_review'])['elapsedTime']['millis'],
         }
       }
 
-      if(item['issue_sla_time_to_resolution'] !== null) {
+      if (item['issue_sla_time_to_resolution'] !== null) {
         item['issue_sla_time_to_resolution'] = {
-          goalDuration: JSON.parse(item['issue_sla_time_to_resolution'])['goalDuration'],
-          elapsedTime: JSON.parse(item['issue_sla_time_to_resolution'])['elapsedTime'],
-          startTime: JSON.parse(item['issue_sla_time_to_resolution'])['startTime'],
-          stopTime: JSON.parse(item['issue_sla_time_to_resolution'])['stopTime'],
+          goalDuration: JSON.parse(item['issue_sla_time_to_resolution'])['goalDuration']['millis'],
+          elapsedTime: JSON.parse(item['issue_sla_time_to_resolution'])['elapsedTime']['millis'],
         }
-      } 
-      
+      }
+
       result_sla_data.push({
         id: item['id'],
         issue_id: item['issue_key'],
         issue_name: item['issue_name'],
-        issue_summary: item['issue_summary'],
         issue_type: item['issue_type'],
         issue_status: item['issue_status'],
         issue_created: item['issue_created'],
@@ -183,7 +190,7 @@ class IssueController extends Controller {
     const tempResult = [];
     const newResult = [];
 
-    for(let i = 0; i < cseList.length; i++) {
+    for (let i = 0; i < cseList.length; i++) {
       if (tempResult.indexOf(cseList[i]['customer_name']) === -1) {
         newResult.push({
           customer_name: cseList[i]['customer_name'],
@@ -192,7 +199,7 @@ class IssueController extends Controller {
         tempResult.push(cseList[i]['customer_name']);
       } else {
         for (let j = 0; j < newResult.length; j++) {
-          if(newResult[j]['customer_name'] == cseList[i]['customer_name']) {
+          if (newResult[j]['customer_name'] == cseList[i]['customer_name']) {
             newResult[j]['issue_number'] = newResult[j]['issue_number'] + cseList[i]['issue'].length;
           }
         }
@@ -201,22 +208,143 @@ class IssueController extends Controller {
 
     const result_customer_rate_data = newResult.sort(compare('issue_number')).splice(0, 19);
 
+    /**
+     * 同比,环比周数量
+     */
+    const week_1 = await ctx.service.issue.week1();
+    const week_2 = await ctx.service.issue.week2();
+    const week_3 = await ctx.service.issue.week3();
+
+    const _week_1 = week_1['count'];
+    const _week_2 = week_2['count'];
+    const _week_3 = week_3['count'];
+
+    const finish_week_1 = await ctx.service.issue.finishWeek1();
+    const finish_week_2 = await ctx.service.issue.finishWeek2();
+    const finish_week_3 = await ctx.service.issue.finishWeek3();
+
+    const _finish_week_1 = finish_week_1['count'];
+    const _finish_week_2 = finish_week_2['count'];
+    const _finish_week_3 = finish_week_3['count'];
+    /**
+     * 同比,环比月数量
+     */
+    const month_2 = await ctx.service.issue.month2();
+    const month_3 = await ctx.service.issue.month3();
+
+    const _month_1 = issue_month_data['count'];
+    const _month_2 = month_2['count'];
+    const _month_3 = month_3['count'];
+
+    const finish_month_1 = await ctx.service.issue.finishMonth1();
+    const finish_month_2 = await ctx.service.issue.finishMonth2();
+    const finish_month_3 = await ctx.service.issue.finishMonth3();
+
+    const _finish_month_1 = finish_month_1['count'];
+    const _finish_month_2 = finish_month_2['count'];
+    const _finish_month_3 = finish_month_3['count'];
+
+    /**
+     * 同步,环比季度数量
+     */
+    const quarter_1 = await ctx.service.issue.quarter1();
+    const quarter_2 = await ctx.service.issue.quarter2();
+    const quarter_3 = await ctx.service.issue.quarter3();
+
+    const _quarter_1 = quarter_1['count'];
+    const _quarter_2 = quarter_2['count'];
+    const _quarter_3 = quarter_3['count'];
+
+    const finish_quarter_1 = await ctx.service.issue.finishQuarter1();
+    const finish_quarter_2 = await ctx.service.issue.finishQuarter2();
+    const finish_quarter_3 = await ctx.service.issue.finishQuarter3();
+
+    const _finish_quarter_1 = finish_quarter_1['count'];
+    const _finish_quarter_2 = finish_quarter_2['count'];
+    const _finish_quarter_3 = finish_quarter_3['count'];
+
+    /**
+     * 同步,环比半年数量
+     */
+    const half_year1 = await ctx.service.issue.halfYear1();
+    const half_year2 = await ctx.service.issue.halfYear2();
+    const half_year3 = await ctx.service.issue.halfYear3();
+
+    const _half_year1 = half_year1['count'];
+    const _half_year2 = half_year2['count'];
+    const _half_year3 = half_year3['count'];
+
+    const finish_half_year_1 = await ctx.service.issue.finishHalfYear1();
+    const finish_half_year_2 = await ctx.service.issue.finishHalfYear2();
+    const finish_half_year_3 = await ctx.service.issue.finishHalfYear3();
+
+    const _finish_half_year_1 = finish_half_year_1['count'];
+    const _finish_half_year_2 = finish_half_year_2['count'];
+    const _finish_half_year_3 = finish_half_year_3['count'];
+
+    const result_variation = {
+      week_1: _week_1,
+      week_2: _week_2,
+      week_3: _week_3,
+      month_1: _month_1,
+      month_2: _month_2,
+      month_3: _month_3,
+      quarter_1: _quarter_1,
+      quarter_2: _quarter_2,
+      quarter_3: _quarter_3,
+      half_year1: _half_year1,
+      half_year2: _half_year2,
+      half_year3: _half_year3,
+    };
+
+    const result_finish_variation = {
+      week_1: _finish_week_1,
+      week_2: _finish_week_2,
+      week_3: _finish_week_3,
+      month_1: _finish_month_1,
+      month_2: _finish_month_2,
+      month_3: _finish_month_3,
+      quarter_1: _finish_quarter_1,
+      quarter_2: _finish_quarter_2,
+      quarter_3: _finish_quarter_3,
+      half_year_1: _finish_half_year_1,
+      half_year_2: _finish_half_year_2,
+      half_year_3: _finish_half_year_3,
+    };
+
+    const todayStartDate = new Date((new Date().setHours(0, 0, 0) + 8 * 60 * 60 * 1000));
+    const todayEndDate = new Date((new Date().setHours(23, 59, 59) + 8 * 60 * 60 * 1000));
+
+    const MonthStartDate = new Date((new Date().setHours(23, 59, 59) + 8 * 60 * 60 * 1000 - 30 * 24 * 60 * 60 * 1000));
+    const MonthEndDate = new Date((new Date().setHours(23, 59, 59) + 8 * 60 * 60 * 1000));
+
+    const today_created_count = await ctx.service.issue.issueCreated(todayStartDate, todayEndDate);
+    const today_changed_to_count = await ctx.service.issue.issueChangedTo(todayStartDate, todayEndDate);
+    const month_created_count = await ctx.service.issue.issueCreated(MonthStartDate, MonthEndDate);
+    const month_changed_to_count = await ctx.service.issue.issueChangedTo(MonthStartDate, MonthEndDate);
+
     ctx.body = {
       code: 200,
       data: {
         issue_total_number: issue_total['count'],
         customer_total_number: customer_total.length,
         node_total_number: totalNode,
-        ecs_version_data: fix_version_data,
+        ecs_version_data: _ecs_version_data,
         sla_data: result_sla_data,
         customer_rate_data: result_customer_rate_data,
+        issue_variation: result_variation,
+        issue_finish_variation: result_finish_variation,
         issue_data: {
-          assignee: result_issue_assignee_data, 
+          assignee: result_issue_assignee_data,
           type: result_issue_type_data,
           version: result_issue_version_data,
           priority: result_issue_priority_data,
           issue_cpu_data: result_issue_cpu_data,
         },
+        today_created_count: today_created_count,
+        today_changed_to_count: today_changed_to_count,
+        month_created_count: month_created_count,
+        month_changed_to_count: month_changed_to_count
       }
     };
   }

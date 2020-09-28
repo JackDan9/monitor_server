@@ -35,7 +35,7 @@ module.exports = app => {
     issue_components: STRING(128),
     issue_area: STRING(128),
     issue_result: STRING(128),
-    issue_extra_1: STRING(128),
+    issue_status_change_date: DATE,
     issue_extra_2: STRING(128),
     issue_extra_3: STRING(128),
     created_at: DATE,

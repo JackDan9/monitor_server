@@ -34,6 +34,25 @@ class CseChildService extends Service {
 
     return ctx.model.CseChild.findAll(options);
   };
+
+  async inspectionFrequency() {
+    const ctx = this.ctx;
+
+    const Op = this.app.Sequelize.Op;
+
+    const options = {
+        attributes: ['inspection_frequency'],
+        order: [['cse_created']],
+        plain: false,
+        where: {
+            env_type: {
+                [Op.not]: 'POC'
+            },
+        },
+    };
+
+    return ctx.model.CseChild.findAll(options);
+}
 };
 
 module.exports = CseChildService;
