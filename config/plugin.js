@@ -23,7 +23,7 @@ module.exports = {
   },
   // orm: 对象关系映射
   sequelize: {
-    enable: true,
+    enable: false,
     package: 'egg-sequelize',
   },
   // graphql 查询语言

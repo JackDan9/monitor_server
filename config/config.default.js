@@ -59,11 +59,11 @@ module.exports = appInfo => {
   // 使用npx可以执行sequelize模块带有的命令
   config.sequelize = {
     dialect: 'mysql',
-    host: '172.16.7.84',
+    host: 'db_host',
     port: 3306,
-    username: 'root',
-    password: 'passw0rd',
-    database: 'redmine20200814',
+    username: 'db_username',
+    password: 'db_password',
+    database: 'db_name',
   };
   // add your user config here
   const userConfig = {
